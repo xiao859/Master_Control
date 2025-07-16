@@ -184,11 +184,131 @@ void XrayioProcess(void)
 
 void PhotoelectricSwitchProcess(void)
 {
+	static uint8_t pe_sw_status = 0;
+	if(pe_sw_status >2)
+		return;
+	   // 读取光电开关的状态，假设 PA1为低电平表示遮挡
+    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_8) == GPIO_PIN_RESET)  
+    {
+        // 光电开关被遮挡，增加计数
+        pe_sw_status++;
+
+        // 如果遮挡次数达到 2 次
+        if (pe_sw_status >= 2)
+        {
+            // 设置状态为 3
+            pe_sw_status = 3;
+					  if (cmdfifo.count < FRAME_BUF_NUM)
+            {
+                // === success ===
+                uint8_t idx = cmdfifo.tail;
+                cmdfifo.data[idx].head1 = SCI_TES_HEADER1;
+                cmdfifo.data[idx].head2 = SCI_TES_HEADER2;
+                cmdfifo.data[idx].msg_id = CMD_PE_SW;
+                cmdfifo.data[idx].data1 = 0x00;
+                cmdfifo.data[idx].data2 = 0x00;
+                cmdfifo.data[idx].checksum = uart_check(&cmdfifo.data[idx].msg_id);
+                cmdfifo.tail = (cmdfifo.tail + 1) % FRAME_BUF_NUM;
+                cmdfifo.count++;
+            }
+        }
+    }
 
 }
-
+uint8_t fan_status=0;
 void FanProcess(void)
 {
+	switch(fan_status)
+	{
+		case 0:
+			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,GPIO_PIN_SET);
+		break;
+		case 1:
+			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,GPIO_PIN_RESET);
+			if (cmdfifo.count < FRAME_BUF_NUM)
+			{
+					// === success ===
+					uint8_t idx = cmdfifo.tail;
+					cmdfifo.data[idx].head1 = SCI_TES_HEADER1;
+					cmdfifo.data[idx].head2 = SCI_TES_HEADER2;
+					cmdfifo.data[idx].msg_id = CMD_FAN;
+					cmdfifo.data[idx].data1 = 0x00;
+					cmdfifo.data[idx].data2 = 0x00;
+					cmdfifo.data[idx].checksum = uart_check(&cmdfifo.data[idx].msg_id);
+					cmdfifo.tail = (cmdfifo.tail + 1) % FRAME_BUF_NUM;
+					cmdfifo.count++;
+			}
+			fan_status = 2;	
+		break;
+		case 2:
+			HAL_GPIO_WritePin(GPIOB,GPIO_PIN_9,GPIO_PIN_RESET);
+		break;
+		case 3:
+		 if (cmdfifo.count < FRAME_BUF_NUM)
+		{
+				// === success ===
+				uint8_t idx = cmdfifo.tail;
+				cmdfifo.data[idx].head1 = SCI_TES_HEADER1;
+				cmdfifo.data[idx].head2 = SCI_TES_HEADER2;
+				cmdfifo.data[idx].msg_id = CMD_FAN;
+				cmdfifo.data[idx].data1 = 0x00;
+				cmdfifo.data[idx].data2 = 0x01;
+				cmdfifo.data[idx].checksum = uart_check(&cmdfifo.data[idx].msg_id);
+				cmdfifo.tail = (cmdfifo.tail + 1) % FRAME_BUF_NUM;
+				cmdfifo.count++;
+		}
+		fan_status = 4;	
+		default:
+			break;
+	}	
+}
+
+uint8_t dev_led_status=0;
+void DeviceledProcess(void)
+{
+	switch(dev_led_status)
+	{
+		case 0:
+			HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_SET);
+		break;
+		case 1:
+			HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);
+			if (cmdfifo.count < FRAME_BUF_NUM)
+			{
+					// === success ===
+					uint8_t idx = cmdfifo.tail;
+					cmdfifo.data[idx].head1 = SCI_TES_HEADER1;
+					cmdfifo.data[idx].head2 = SCI_TES_HEADER2;
+					cmdfifo.data[idx].msg_id = CMD_DEVICE;
+					cmdfifo.data[idx].data1 = 0x00;
+					cmdfifo.data[idx].data2 = 0x00;
+					cmdfifo.data[idx].checksum = uart_check(&cmdfifo.data[idx].msg_id);
+					cmdfifo.tail = (cmdfifo.tail + 1) % FRAME_BUF_NUM;
+					cmdfifo.count++;
+			}
+			dev_led_status = 2;	
+		break;
+		case 2:
+			HAL_GPIO_WritePin(GPIOC,GPIO_PIN_2,GPIO_PIN_RESET);
+		break;
+		case 3:
+		 if (cmdfifo.count < FRAME_BUF_NUM)
+		{
+				// === success ===
+				uint8_t idx = cmdfifo.tail;
+				cmdfifo.data[idx].head1 = SCI_TES_HEADER1;
+				cmdfifo.data[idx].head2 = SCI_TES_HEADER2;
+				cmdfifo.data[idx].msg_id = CMD_DEVICE;
+				cmdfifo.data[idx].data1 = 0x00;
+				cmdfifo.data[idx].data2 = 0x01;
+				cmdfifo.data[idx].checksum = uart_check(&cmdfifo.data[idx].msg_id);
+				cmdfifo.tail = (cmdfifo.tail + 1) % FRAME_BUF_NUM;
+				cmdfifo.count++;
+		}
+		dev_led_status = 4;	
+		default:
+			break;
+	}	
 
 }
 

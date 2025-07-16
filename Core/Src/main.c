@@ -128,6 +128,8 @@ int main(void)
 			
 			XrayioProcess();
 			
+			DeviceledProcess();
+			
 			CmdProcess();
 			
 			UartProcess();

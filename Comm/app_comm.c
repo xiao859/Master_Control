@@ -1,9 +1,44 @@
 #include "app_comm.h"
 #include "string.h"
+#include "stdbool.h"
 
 #define CMD_TIMEOUT_MS 3000
 
-void UartProcess()
+#define MOTOR1_STEP_PIN     GPIO_PIN_0
+#define MOTOR1_DIR_PIN      GPIO_PIN_1
+#define MOTOR2_STEP_PIN     GPIO_PIN_2
+#define MOTOR2_DIR_PIN      GPIO_PIN_3
+#define MOTOR_GPIO_PORT     GPIOA  // 修改为你所使用的 GPIO 端口
+
+
+// 电机控制函数：正转、反转、停止
+typedef enum {
+    MOTOR_STOP = 0,
+    MOTOR_FORWARD,
+    MOTOR_BACKWARD
+} MotorState;
+
+MotorState motor_state = MOTOR_STOP;
+
+void Motor_Control(MotorState state)
+{
+    switch (state)
+    {
+    case MOTOR_FORWARD:
+        HAL_GPIO_WritePin(MOTOR_GPIO_PORT, MOTOR2_DIR_PIN, GPIO_PIN_SET); // 设置正转方向
+        break;
+    case MOTOR_BACKWARD:
+        HAL_GPIO_WritePin(MOTOR_GPIO_PORT, MOTOR2_DIR_PIN, GPIO_PIN_RESET); // 设置反转方向
+        break;
+    case MOTOR_STOP:
+        break;
+    }
+}
+
+
+extern uint8_t fan_status,dev_led_status;
+
+void UartProcess()//还需加上timer启动和停止
 {
     if (uart5_frame_fifo.count == 0) 
 			return;
@@ -13,15 +48,28 @@ void UartProcess()
 
         switch (cmd)
         {
-        case CMD_MOTOR1:
-            
+        case CMD_MOTOR_FORWORD:
+            motor_state = MOTOR_FORWARD;
+			Motor_Control(motor_state);
             break;
-        case CMD_MOTOR2:
-           
+        case CMD_MOTOR_REVERSW:
+			motor_state = MOTOR_BACKWARD;
+			Motor_Control(motor_state);
             break;
         case CMD_MOTOR_STOP:
-            
+            motor_state = MOTOR_STOP;
+			Motor_Control(motor_state);
             break;
+		case CMD_FAN:
+			if(frame->data1 == 0)
+				fan_status=1;
+			if(frame->data1 == 1)
+				fan_status=3;
+		case CMD_DEVICE:
+			if(frame->data1 == 1)
+				dev_led_status=1;
+			if(frame->data1 == 1)
+				dev_led_status=3;
         default:
            break;
         }

@@ -56,7 +56,7 @@ extern UARTFIFO_t uart2_frame_fifo ;
 
 typedef struct
 {
-    message_protocol data[CMD_NUM]; //
+    message_protocol data[CMD_NUM]; //buf
     uint8_t head; //
     uint8_t tail; //
     uint8_t count; //
@@ -84,8 +84,6 @@ typedef enum
     CMD_FAN,
     CMD_DEVICE,
     CMD_PE_SW,//Photoelectric switch
-		CMD_MOTOR1,
-		CMD_MOTOR2,	
     CMD_MOTOR_FORWORD,
     CMD_MOTOR_REVERSW,
     CMD_MOTOR_STOP,

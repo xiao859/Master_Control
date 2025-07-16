@@ -9,5 +9,6 @@ void DoorProcess(void);
 void XrayioProcess(void);
 void PhotoelectricSwitchProcess(void);
 void FanProcess(void);
+void DeviceledProcess(void);
 #endif
 
