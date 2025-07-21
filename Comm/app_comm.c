@@ -12,7 +12,8 @@
 
 
 // 电机控制函数：正转、反转、停止
-typedef enum {
+typedef enum
+{
     MOTOR_STOP = 0,
     MOTOR_FORWARD,
     MOTOR_BACKWARD
@@ -36,45 +37,45 @@ void Motor_Control(MotorState state)
 }
 
 
-extern uint8_t fan_status,dev_led_status;
+extern uint8_t fan_status, dev_led_status;
 
 void UartProcess()//还需加上timer启动和停止
 {
-    if (uart5_frame_fifo.count == 0) 
-			return;
-		    uint8_t idx = uart5_frame_fifo.head;
-        message_protocol* frame = & uart5_frame_fifo.data[idx];
-        uint8_t cmd = frame->msg_id;
+    if (uart5_frame_fifo.count == 0)
+        return;
+    uint8_t idx = uart5_frame_fifo.head;
+    message_protocol* frame = & uart5_frame_fifo.data[idx];
+    uint8_t cmd = frame->msg_id;
 
-        switch (cmd)
-        {
-        case CMD_MOTOR_FORWORD:
-            motor_state = MOTOR_FORWARD;
-			Motor_Control(motor_state);
-            break;
-        case CMD_MOTOR_REVERSW:
-			motor_state = MOTOR_BACKWARD;
-			Motor_Control(motor_state);
-            break;
-        case CMD_MOTOR_STOP:
-            motor_state = MOTOR_STOP;
-			Motor_Control(motor_state);
-            break;
-		case CMD_FAN:
-			if(frame->data1 == 0)
-				fan_status=1;
-			if(frame->data1 == 1)
-				fan_status=3;
-		case CMD_DEVICE:
-			if(frame->data1 == 1)
-				dev_led_status=1;
-			if(frame->data1 == 1)
-				dev_led_status=3;
-        default:
-           break;
-        }
-        uart5_frame_fifo.head = (uart5_frame_fifo.head + 1) % FRAME_BUF_NUM;
-        uart5_frame_fifo.count--;
+    switch (cmd)
+    {
+    case CMD_MOTOR_FORWORD:
+        motor_state = MOTOR_FORWARD;
+        Motor_Control(motor_state);
+        break;
+    case CMD_MOTOR_REVERSW:
+        motor_state = MOTOR_BACKWARD;
+        Motor_Control(motor_state);
+        break;
+    case CMD_MOTOR_STOP:
+        motor_state = MOTOR_STOP;
+        Motor_Control(motor_state);
+        break;
+    case CMD_FAN:
+        if (frame->data1 == 0)
+            fan_status = 1;
+        if (frame->data1 == 1)
+            fan_status = 3;
+    case CMD_DEVICE:
+        if (frame->data1 == 1)
+            dev_led_status = 1;
+        if (frame->data1 == 1)
+            dev_led_status = 3;
+    default:
+        break;
+    }
+    uart5_frame_fifo.head = (uart5_frame_fifo.head + 1) % FRAME_BUF_NUM;
+    uart5_frame_fifo.count--;
 
 }
 
@@ -102,7 +103,7 @@ void CmdProcess(void)
         cmdfifo.last_send_tick = now;
         cmdfifo.waiting_ack = 1;
     }
-		return;
+    return;
 }
 
 

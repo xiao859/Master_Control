@@ -102,15 +102,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             {
                 if (memcmp(uart1.uart_rx_buf, uarttemp, 6))
                 {
-                    uint8_t idx = cmdfifo.tail;
-                    cmdfifo.data[idx].head1 = SCI_TES_HEADER1;
-                    cmdfifo.data[idx].head2 = SCI_TES_HEADER2;
-                    cmdfifo.data[idx].msg_id = CMD_PC_UART;
-                    cmdfifo.data[idx].data1 = 0x00;
-                    cmdfifo.data[idx].data2 = 0x00;
-                    cmdfifo.data[idx].checksum = uart_check(&cmdfifo.data[idx].msg_id);
-                    cmdfifo.tail = (cmdfifo.tail + 1) % FRAME_BUF_NUM;
-                    cmdfifo.count++;
+                    message_protocol pcdata;
+                    pcdata.head1 = SCI_TES_HEADER1;
+                    pcdata.head2 = SCI_TES_HEADER2;
+                    pcdata.msg_id = CMD_PC_UART;
+                    pcdata.data1 = 0;
+                    pcdata.data2 = 0;
+                    pcdata.checksum = uart_check(&pcdata.msg_id);
+                    HAL_UART_Transmit(&huart1, (uint8_t *)&pcdata, sizeof(pcdata), 100);
                 }
                 uart1.receiving = 0;
                 uart1.uart_rx_cnt = 0;
@@ -138,15 +137,14 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
             {
                 if (memcmp(uart2.uart_rx_buf, uarttemp, 6))
                 {
-                    uint8_t idx = cmdfifo.tail;
-                    cmdfifo.data[idx].head1 = SCI_TES_HEADER1;
-                    cmdfifo.data[idx].head2 = SCI_TES_HEADER2;
-                    cmdfifo.data[idx].msg_id = CMD_XRAY_UART;
-                    cmdfifo.data[idx].data1 = 0x00;
-                    cmdfifo.data[idx].data2 = 0x00;
-                    cmdfifo.data[idx].checksum = uart_check(&cmdfifo.data[idx].msg_id);
-                    cmdfifo.tail = (cmdfifo.tail + 1) % FRAME_BUF_NUM;
-                    cmdfifo.count++;
+                    message_protocol pcdata;
+                    pcdata.head1 = SCI_TES_HEADER1;
+                    pcdata.head2 = SCI_TES_HEADER2;
+                    pcdata.msg_id = CMD_XRAY_UART;
+                    pcdata.data1 = 0;
+                    pcdata.data2 = 0;
+                    pcdata.checksum = uart_check(&pcdata.msg_id);
+                    HAL_UART_Transmit(&huart2, (uint8_t *)&pcdata, sizeof(pcdata), 100);
                 }
                 uart2.receiving = 0;
                 uart2.uart_rx_cnt = 0;
@@ -219,7 +217,7 @@ uint8_t uart_check(uint8_t* data)
 
 void UART_Send_CMD(message_protocol *cmd)
 {
-    HAL_UART_Transmit(&huart2, (uint8_t *)cmd, sizeof(message_protocol), 100);
+    HAL_UART_Transmit(&huart5, (uint8_t *)cmd, sizeof(message_protocol), 100);
 }
 
 
